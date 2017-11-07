@@ -3,7 +3,6 @@ Ext.define('CustomApp', {
 	componentCls: 'app',
 	launch: function () {
         app = this;
-        
 		typeComboBox = this.add({
 			xtype: 'rallyportfolioitemtypecombobox',
 			listeners: {
@@ -33,7 +32,6 @@ Ext.define('CustomApp', {
 			}
 		});
 	},
-
 	_onDataLoaded: function (store, data) {
         var bubbleDiv = app.getSetting('PIBubbleDiv');
 		var series = [];
@@ -79,7 +77,6 @@ Ext.define('CustomApp', {
 			chartData: data,
 			chartConfig: this._getChartConfig()
 		});
-
 	},
 	_getColor: function (index) {
 		var COLORS = [
@@ -164,7 +161,6 @@ Ext.define('CustomApp', {
 			},
 			{ type: 'query' }
         ];
-
         return values;
     },
     config: {
@@ -179,6 +175,4 @@ Ext.define('CustomApp', {
         }
         return queries;
     }  
-
-
 });
