@@ -1,4 +1,4 @@
-Ext.define('CustomApp', {
+Ext.define('PIValueVsRisk', {
 	extend: 'Rally.app.App',
 	componentCls: 'app',
 	launch: function () {
@@ -20,7 +20,7 @@ Ext.define('CustomApp', {
 		this.myStore = Ext.create('Rally.data.wsapi.Store', {
 			model: piType,
 			autoLoad: true,
-			fetch: ['FormattedID', 'Name', 'RiskScore', 'ValueScore', 'PreliminaryEstimate', 'PreliminaryEstimateValue', 'InvestmentCategory'],
+			fetch: ['FormattedID', 'Name', 'PreliminaryEstimate', 'PreliminaryEstimateValue', app.getSetting('groupByField'), riskField = app.getSetting('riskField'), riskField = app.getSetting('valueField') ],
 			sorters: [{
 				property: 'InvestmentCategory',
 				direction: 'ASC'
@@ -33,7 +33,10 @@ Ext.define('CustomApp', {
 		});
 	},
 	_onDataLoaded: function (store, data) {
-        var bubbleDiv = app.getSetting('PIBubbleDiv');
+		var bubbleDiv = app.getSetting('PIBubbleDiv');
+		var groupField = app.getSetting('groupByField');
+		var riskField = app.getSetting('riskField');
+		var valueField = app.getSetting('valueField');
 		var series = [];
 		var ccount = 0;
 		var currentSeries = {
@@ -42,9 +45,9 @@ Ext.define('CustomApp', {
 		var records = _.map(data, function (record) {
 			// console.log(record);
 
-			if (record.get('InvestmentCategory') !== currentSeries.name) {
+			if (record.get(groupField) !== currentSeries.name) {
 				currentSeries = {
-					name: record.get('InvestmentCategory'),
+					name: record.get(groupField),
 					data: [],
 					color: app._getColor(ccount++)
 				};
@@ -159,13 +162,38 @@ Ext.define('CustomApp', {
                 label : "Bubble size divisor (increase for smaller bubbles)",
                 labelWidth: 200
 			},
+			{
+                name: 'valueField',
+                xtype: 'rallytextfield',
+                margin: '0 0 15 50',
+                label : "Value Field (Numeric):",
+                labelWidth: 200
+			},
+			{
+                name: 'riskField',
+                xtype: 'rallytextfield',
+                margin: '0 0 15 50',
+                label : "Risk Field (Numeric):",
+                labelWidth: 200
+			},
+			{
+                name: 'groupByField',
+                xtype: 'rallytextfield',
+                margin: '0 0 15 50',
+                label : "Group By Field (Color Coded):",
+                labelWidth: 200
+			},
 			{ type: 'query' }
         ];
         return values;
     },
     config: {
         defaultSettings : {
-			PIBubbleDiv : 1		
+			PIBubbleDiv : 1,
+			groupByField: 'InvestmentCategory',
+			valueField: 'ValueScore',
+			riskField: 'RiskScore'
+
         }
 	},
 	getQueryFilter: function() {
