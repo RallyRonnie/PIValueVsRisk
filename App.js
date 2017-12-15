@@ -20,7 +20,7 @@ Ext.define('PIValueVsRisk', {
 		this.myStore = Ext.create('Rally.data.wsapi.Store', {
 			model: piType,
 			autoLoad: true,
-			fetch: ['FormattedID', 'Name', 'PreliminaryEstimate', 'PreliminaryEstimateValue', app.getSetting('groupByField'), riskField = app.getSetting('riskField'), riskField = app.getSetting('valueField') ],
+			fetch: ['FormattedID', 'Name', 'PreliminaryEstimate', 'PreliminaryEstimateValue', app.getSetting('groupByField'), riskField = app.getSetting('riskField'), riskField = app.getSetting('valueField'), app.getSetting('bubbleSizeField') ],
 			sorters: [{
 				property: 'InvestmentCategory',
 				direction: 'ASC'
@@ -44,10 +44,10 @@ Ext.define('PIValueVsRisk', {
 		};
 		var records = _.map(data, function (record) {
 			// console.log(record);
-
-			if (record.get(groupField) !== currentSeries.name) {
+			var rec = (record.get(groupField)._type === undefined )  ? record.get(groupField) : record.get(groupField)._refObjectName ;
+			if (rec !== currentSeries.name) {
 				currentSeries = {
-					name: record.get(groupField),
+					name: rec,
 					data: [],
 					color: app._getColor(ccount++)
 				};
@@ -55,9 +55,22 @@ Ext.define('PIValueVsRisk', {
 			}
 			var bubbleSize = 5;
 			var sizeText = "Unknown";
-			if (record.get('PreliminaryEstimate')) {
-				bubbleSize = (100 * record.get('PreliminaryEstimateValue')) / bubbleDiv;
-				sizeText = record.get('PreliminaryEstimate').Name;
+			if (app.getSetting('bubbleSizeField') === 'PreliminaryEstimate') {
+				bsizeName = 'PreliminaryEstimate';
+				bsizeValue = record.get('PreliminaryEstimateValue');
+				if (record.get(bsizeName)) {
+					bubbleSize = (100 * bsizeValue) / bubbleDiv;
+					sizeText = record.get(bsizeName).Name;
+				}
+			} else {
+// console.log(record);
+				bsizeName = app.getSetting('bubbleSizeField');
+				bsizeValue = record.get(bsizeName);
+				if (record.get(bsizeName)) {
+// console.log(bsizeName, bsizeValue);
+					bubbleSize = (100 * bsizeValue) / bubbleDiv;
+					sizeText = record.get(bsizeName);
+				}
 			}
 //			console.log(record);
 			currentSeries.data.push({
@@ -68,12 +81,12 @@ Ext.define('PIValueVsRisk', {
 				size: sizeText,
 			});
 		});
-		// console.log(series);
+// console.log(series);
 		this._drawChart({series: series});
 	},
 	_drawChart: function (data) {
         if ( this._myBoard ) { this._myBoard.destroy(); }
-		//                    console.log(data);
+//  console.log(data);
 		this._myBoard = this.add({
 			xtype: 'rallychart',
 			loadMask: false,
@@ -149,39 +162,54 @@ Ext.define('PIValueVsRisk', {
     },
     getSettingsFields: function() {
         var values = [
+			{   // Card Field Picker
+				xtype: 'rallyfieldcombobox',
+				name: 'riskField',
+				fieldLabel: 'Risk Field:',
+				model: 'PortfolioItem',
+				boxLabelAlign: 'after',
+				margin: '0 0 15 10',
+				labelStyle: "width:100px;"
+			},
+			{   // Card Field Picker
+				xtype: 'rallyfieldcombobox',
+				name: 'valueField',
+				fieldLabel: 'Value Field:',
+				model: 'PortfolioItem',
+				boxLabelAlign: 'after',
+				margin: '0 0 15 10',
+				labelStyle: "width:100px;"
+			},
+			{   // Card Field Picker
+				xtype: 'rallyfieldcombobox',
+				name: 'groupByField',
+				fieldLabel: 'Group By Field:',
+				model: 'PortfolioItem',
+				boxLabelAlign: 'after',
+				margin: '0 0 15 10',
+				labelStyle: "width:100px;"
+			},
 			{
 				xtype: 'label',
 				forId: 'myFieldId1',
 				text: 'Bubble Size',
 				margin: '0 0 0 10'
 			},
-           {
+        	{
                 name: 'PIBubbleDiv',
                 xtype: 'rallynumberfield',
                 margin: '0 0 15 50',
                 label : "Bubble size divisor (increase for smaller bubbles)",
                 labelWidth: 200
 			},
-			{
-                name: 'valueField',
-                xtype: 'rallytextfield',
-                margin: '0 0 15 50',
-                label : "Value Field (Numeric):",
-                labelWidth: 200
-			},
-			{
-                name: 'riskField',
-                xtype: 'rallytextfield',
-                margin: '0 0 15 50',
-                label : "Risk Field (Numeric):",
-                labelWidth: 200
-			},
-			{
-                name: 'groupByField',
-                xtype: 'rallytextfield',
-                margin: '0 0 15 50',
-                label : "Group By Field (Color Coded):",
-                labelWidth: 200
+			{   // Card Field Picker
+				xtype: 'rallyfieldcombobox',
+				name: 'bubbleSizeField',
+				fieldLabel: 'Bubble Size Field:',
+				model: 'PortfolioItem',
+				boxLabelAlign: 'after',
+				margin: '0 0 15 50',
+				labelStyle: "width:200px;"
 			},
 			{ type: 'query' }
         ];
@@ -192,7 +220,8 @@ Ext.define('PIValueVsRisk', {
 			PIBubbleDiv : 1,
 			groupByField: 'InvestmentCategory',
 			valueField: 'ValueScore',
-			riskField: 'RiskScore'
+			riskField: 'RiskScore',
+			bubbleSizeField: 'PreliminaryEstimate'
 
         }
 	},
