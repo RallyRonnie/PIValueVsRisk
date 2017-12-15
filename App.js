@@ -62,8 +62,8 @@ Ext.define('PIValueVsRisk', {
 //			console.log(record);
 			currentSeries.data.push({
 				name: record.get('FormattedID') + ": " + record.get('Name'),
-				x: record.get('ValueScore'),
-				y: record.get('RiskScore'),
+				x: record.get(valueField),
+				y: record.get(riskField),
 				z: bubbleSize,
 				size: sizeText,
 			});
@@ -110,13 +110,13 @@ Ext.define('PIValueVsRisk', {
 			xAxis: {
 				min: 0,
 				title: {
-					text: 'Value'
+					text: app.getSetting('valueField')
 				}
 			},
 			yAxis: {
 				min: 0,
 				title: {
-					text: 'Risk'
+					text: app.getSetting('riskField')
 				}
 			},
 			tooltip: {
