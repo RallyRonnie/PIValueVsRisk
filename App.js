@@ -22,8 +22,8 @@ Ext.define('PIValueVsRisk', {
 			autoLoad: true,
 			fetch: ['FormattedID', 'Name', 'PreliminaryEstimate', 'PreliminaryEstimateValue', app.getSetting('groupByField'), riskField = app.getSetting('riskField'), riskField = app.getSetting('valueField'), app.getSetting('bubbleSizeField') ],
 			sorters: [{
-				property: 'InvestmentCategory',
-				direction: 'ASC'
+				property: app.getSetting('groupByField'),
+				direction: 'DESC'
             }],
             filters:  app.getQueryFilter(),	
 			listeners: {
@@ -44,7 +44,11 @@ Ext.define('PIValueVsRisk', {
 		};
 		var records = _.map(data, function (record) {
 			// console.log(record);
-			var rec = (record.get(groupField)._type === undefined )  ? record.get(groupField) : record.get(groupField)._refObjectName ;
+			if (record.get(groupField) != null) { // some fields, no-entry is set to null
+				rec = (record.get(groupField)._type === undefined )  ? record.get(groupField) : record.get(groupField)._refObjectName ;
+			} else {
+				rec = '--No Entry--';
+			}
 			if (rec !== currentSeries.name) {
 				currentSeries = {
 					name: rec,
